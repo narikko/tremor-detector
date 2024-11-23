@@ -85,8 +85,8 @@ all: main-build
 main-build: tremor-detector.elf secondary-outputs
 
 # Tool invocations
-tremor-detector.elf tremor-detector.map: $(OBJS) $(USER_OBJS) C:\Users\nh_14\STM32CubeIDE\workspace_1.16.0\tremor-detector\STM32L4S5VITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "tremor-detector.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\nh_14\STM32CubeIDE\workspace_1.16.0\tremor-detector\STM32L4S5VITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="tremor-detector.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+tremor-detector.elf tremor-detector.map: $(OBJS) $(USER_OBJS) C:\Users\nh_14\OneDrive\Documents\tremor-detector\tremor-detector\firmware\tremor-detector\STM32L4S5VITX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "tremor-detector.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\nh_14\OneDrive\Documents\tremor-detector\tremor-detector\firmware\tremor-detector\STM32L4S5VITX_FLASH.ld" --specs=nosys.specs -Wl,-Map="tremor-detector.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 
