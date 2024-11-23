@@ -108,7 +108,7 @@ int main(void)
 
     /* USER CODE BEGIN 3 */
 	  BSP_ACCELERO_AccGetXYZ(acceleroVal);
-	  sprintf(output, "Acceleration (X,Y,Z): %d, %d, %d\r\n",
+	  sprintf(output, "%d, %d, %d\r\n",
   			(int) acceleroVal[0], (int) acceleroVal[1], (int) acceleroVal[2]);
 	  uint16_t len = strlen(output);
 	  HAL_UART_Transmit(&huart1, (uint8_t*)output, len, 10000);
