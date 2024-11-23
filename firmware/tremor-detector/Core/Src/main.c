@@ -113,7 +113,7 @@ int main(void)
 	  uint16_t len = strlen(output);
 	  HAL_UART_Transmit(&huart1, (uint8_t*)output, len, 10000);
 
-	  HAL_Delay(100);
+	  HAL_Delay(50);
   }
   /* USER CODE END 3 */
 }

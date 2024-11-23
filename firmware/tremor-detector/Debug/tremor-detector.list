@@ -490,8 +490,8 @@ int main(void)
  80005fc:	4804      	ldr	r0, [pc, #16]	@ (8000610 <main+0x70>)
  80005fe:	f003 fce9 	bl	8003fd4 <HAL_UART_Transmit>
 
-	  HAL_Delay(100);
- 8000602:	2064      	movs	r0, #100	@ 0x64
+	  HAL_Delay(50);
+ 8000602:	2032      	movs	r0, #50	@ 0x32
  8000604:	f000 fdd6 	bl	80011b4 <HAL_Delay>
   {
  8000608:	bf00      	nop
