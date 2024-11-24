@@ -1,6 +1,6 @@
 import serial
 import time
-import asyncio
+import queue
 import filter_anomalies
 import features
 import pandas as pd
@@ -14,6 +14,8 @@ from sklearn.ensemble import RandomForestClassifier
 
 globalArray = []
 counter = 0
+xyz_queue = queue.Queue()  # Queue for x, y, z data
+index_queue = queue.Queue()  # Queue for prediction indices
 
 def get_curr_arrayX():
     return curr_arrayX
@@ -35,7 +37,7 @@ def filtering():
 
     get_data(filtered_x,filtered_y,filtered_z)
 
-def  get_data(x,y,z):
+def get_data(x,y,z):
 
     global counter
     global globalArray
@@ -89,6 +91,9 @@ def  get_data(x,y,z):
     print("Tremor level is ")
     print(level_prediction[0])
 
+    index_queue.put({'type': 'index', 'index': int(level_prediction[0])})
+    
+    
     #counter += 1
 
     #globalArray.append(result_array)
@@ -128,46 +133,61 @@ ser = serial.Serial(
 
 print("Listening on", ser.port)
 
-data_arrayX = []
-data_arrayY = []
-data_arrayZ = []
+
 
 curr_arrayX = []
 curr_arrayY = []
 curr_arrayZ = []
 
-duration = 5
-start_time = time.time()
 
-try:
-    while True:
-        elapsed_time = time.time() - start_time
-        if elapsed_time < duration:
-            if ser.in_waiting:  # Check if data is available
-                try:
-                    data = ser.readline().decode('utf-8').strip()  # Read a line and decode
-                    split_data = data.split(",")
-                    data_arrayX.append(int("".join(split_data[0].split())))
-                    data_arrayY.append(int("".join(split_data[1].split())))
-                    data_arrayZ.append(int("".join(split_data[2].split())))
-                    #print("Received:", data)
-                except:
-                    print("Error.")
-        else:
-            curr_arrayX = data_arrayX
-            curr_arrayY = data_arrayY
-            curr_arrayZ = data_arrayZ
-            start_time = time.time()
 
-            filtering()
+def start_serial_reading():
+    global curr_arrayX, curr_arrayY, curr_arrayZ, data_queue
 
-            data_arrayX = []
-            data_arrayY = []
-            data_arrayZ = []
-except KeyboardInterrupt:
-    print("\nExiting...")
-finally:
-    ser.close()  # Close the port when done
+    data_arrayX = []
+    data_arrayY = []
+    data_arrayZ = []
+
+    duration = 5
+    start_time = time.time()
+
+    try:
+        while True:
+            elapsed_time = time.time() - start_time
+            if elapsed_time < duration:
+                if ser.in_waiting:  # Check if data is available
+                    try:
+                        data = ser.readline().decode('utf-8').strip()  # Read a line and decode
+                        split_data = data.split(",")
+                        x = int("".join(split_data[0].split()))+53
+                        y = int("".join(split_data[1].split()))-4
+                        z = int("".join(split_data[2].split()))+985
+
+                        # Add data to live arrays
+                        data_arrayX.append(x)
+                        data_arrayY.append(y)
+                        data_arrayZ.append(z)
+
+                        # Optional: Put raw data into the queue for live display
+                        xyz_queue.put({'type': 'xyz', 'x': x, 'y': y, 'z': z})
+
+                    except:
+                        print("Error.")
+            else:
+                curr_arrayX = data_arrayX
+                curr_arrayY = data_arrayY
+                curr_arrayZ = data_arrayZ
+                start_time = time.time()
+
+                filtering()
+
+                data_arrayX = []
+                data_arrayY = []
+                data_arrayZ = []
+    except KeyboardInterrupt:
+        print("\nExiting...")
+    finally:
+        ser.close()  # Close the port when done
 
 
 
