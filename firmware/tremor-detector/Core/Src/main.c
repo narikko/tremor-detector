@@ -98,6 +98,7 @@ int main(void)
   int16_t acceleroVal[3];
   char output[100];
 
+
   /* USER CODE END 2 */
 
   /* Infinite loop */

@@ -1,10 +1,15 @@
 import serial
 import time
 import queue
-import filter_anomalies
-import features
 import pandas as pd
 from joblib import load
+import sys
+import os
+
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'backend')))
+
+import filter_anomalies
+import features
 
 import sklearn
 import pandas as pd
