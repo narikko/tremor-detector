@@ -11,8 +11,6 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
 from backend import retrieve_data
-from backend import features
-from backend import filter_anomalies
 
 # Colors
 PRIMARY_COLOR = "#4CAF50"  # Green color for buttons and accents
@@ -82,8 +80,19 @@ class TremorApp(tk.Tk):
         # Start periodic queue checks
         self.check_xyz_queue()
         self.check_index_queue()
+        self.check_freq_queue()
 
-    def show_frame(self, page_class):
+    def show_frame(self, page_class, reinitialize=False):
+        if reinitialize:
+            # Remove the old frame
+            frame = self.frames.pop(page_class, None)
+            if frame is not None:
+                frame.destroy()  # Destroy the existing frame
+
+            # Create a new instance of the frame
+            frame = page_class(parent=self, controller=self)
+            self.frames[page_class] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
         frame = self.frames[page_class]
         frame.tkraise()
 
@@ -110,6 +119,19 @@ class TremorApp(tk.Tk):
         except queue.Empty:  # Correctly refer to queue.Empty
             pass
         self.after(100, self.check_index_queue)
+
+    def check_freq_queue(self):
+        # Check freq_queue for new data and update tremor level
+        try:
+            data = retrieve_data.freq_queue.get_nowait()
+            global index_reached
+            if not(index_reached):
+                frequency = data
+                print(f"Received freq: {frequency}")
+                self.frames[ThankYouPage].update_freq(frequency)
+        except queue.Empty:  # Correctly refer to queue.Empty
+            pass
+        self.after(100, self.check_freq_queue)
 
 
 class StartPage(tk.Frame):
@@ -168,17 +190,6 @@ class StartPage(tk.Frame):
         btn = ttk.Button(self, text="Start a Test", style="Custom.TButton", command=lambda: controller.show_frame(InstructionsPage))
         btn.place(x=525, y=300)
 
-        # Start the countdown timer
-        #self.update_countdown()
-    """
-    def update_countdown(self):
-        if self.time_left > 0:
-            self.time_left -= 1
-            self.countdown_label.config(text=f"Your tests are running... {self.time_left} seconds left")
-            self.after(1000, self.update_countdown)
-        else:
-            self.controller.frames[GraphPage].show_and_schedule_thank_you()
-            """
 class InstructionsPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent)
@@ -188,8 +199,8 @@ class InstructionsPage(tk.Frame):
         instructions = """
             1. Insert hand in glove.
             2. Don't move (voluntarily) for 10 seconds.
-            3. You may remove your hand from glove after 
-               results are ready.
+            3. You may remove your hand from the glove 
+               after results are displayed.
 
             Click ready to start.
             """
@@ -319,26 +330,46 @@ class ThankYouPage(tk.Frame):
         self.controller = controller
         self.configure(bg=SECONDARY_COLOR)
 
-        self.label = tk.Label(self, text="Waiting for tremor level...", font=("Segoe UI", 96, "bold"), fg=HEADER_COLOR, bg="white")
+        self.label = tk.Label(self, text="Waiting for tremor level...", font=("Segoe UI", 48, "bold"), fg=HEADER_COLOR, bg="white")
         self.label.place(x=100, y=50)
 
-        self.rating_label = tk.Label(self, text="rating", font=("Segoe UI", 56, "bold"), fg="#ccecee", bg="white")
-        self.rating_label.place(x=250, y=50)
-        
+        self.rating_label = tk.Label(self, text="rating", font=("Segoe UI", 32, "bold"), fg="#ccecee", bg="white")
+        self.rating_label.place(x=100, y=200)
+
+        self.freq_label = tk.Label(self, text="freq", font=("Segoe UI", 32, "bold"), fg="#ccecee", bg="white")
+        self.freq_label.place(x=100, y=400)
+
+        style = ttk.Style()
+        style.configure("Custom.TButton",
+                font=("Segoe UI", 24, "bold"),
+                foreground=HEADER_COLOR,
+                padding=(20, 10),
+                borderwidth=1)
+
+        style.map("Custom.TButton",  # Define hover effect
+          foreground=[("active", TEXT_COLOR)],
+          background=[("active", HEADER_COLOR)])  # Darker blue on hover
+
+        # Apply the custom style
+        btn = ttk.Button(self, text="Redo Test", style="Custom.TButton", command=lambda: controller.show_frame(InstructionsPage, reinitialize=True))
+        btn.place(x=525, y=300)
 
     def update_label(self, tremor_level):
-        self.label.config(text=f"{tremor_level}")
+        self.label.config(text=f"Your rating is {tremor_level}")
 
         if tremor_level == 0:
-                self.rating_label.config(text="Normal\nCondition")
+                self.rating_label.config(text="Normal Condition")
         elif tremor_level == 1:
-                self.rating_label.config(text="Slight Tremor\nIntensity")
+                self.rating_label.config(text="Slight Tremor Intensity")
         elif tremor_level == 2:
-                self.rating_label.config(text="Mild Tremor\nIntensity")
+                self.rating_label.config(text="Mild Tremor Intensity")
         elif tremor_level == 3:
-                self.rating_label.config(text="Moderate Tremor\nIntensity")
+                self.rating_label.config(text="Moderate Tremor Intensity")
         else:
-                self.rating_label.config(text="Severe Tremor\nIntesity")
+                self.rating_label.config(text="Severe Tremor Intesity")
+        
+    def update_freq(self, freq):
+        self.freq_label.config(text=f"The frequency of the\ntremor is {freq}")
         
         
 

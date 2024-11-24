@@ -21,6 +21,7 @@ globalArray = []
 counter = 0
 xyz_queue = queue.Queue()  # Queue for x, y, z data
 index_queue = queue.Queue()  # Queue for prediction indices
+freq_queue = queue.Queue()
 
 def get_curr_arrayX():
     return curr_arrayX
@@ -63,20 +64,6 @@ def get_data(x,y,z):
     y_mean = features.get_mean(y)
     z_mean = features.get_mean(z)
 
-    """
-
-    magnitude = features.get_magnitude(x,y,z)
-    magnitude_max = features.get_max(magnitude)
-    magnitude_min = features.get_min(magnitude)
-    magnitude_std = features.get_std(magnitude)
-    magnitude_mean = features.get_mean(magnitude)
-
-   
-
-    energy = features.get_energy(magnitude)
-
-     """
-
     zerocrossing_x = features.get_zero_crossing_rates(x)
     zerocrossing_y = features.get_zero_crossing_rates(y)
     zerocrossing_z = features.get_zero_crossing_rates(z)
@@ -85,7 +72,6 @@ def get_data(x,y,z):
     peaks_y = features.get_peak_count(y)
     peaks_z = features.get_peak_count(z)
 
-       # Wrap the result array as a list of lists (2D data)
     result_array = [[x_max,y_max,z_max,x_min, y_min, z_min, x_std, y_std, z_std, x_mean, y_mean, z_mean,
                      zerocrossing_x, zerocrossing_y, zerocrossing_z, peaks_x, peaks_y, peaks_z]]
 
@@ -97,6 +83,10 @@ def get_data(x,y,z):
     print(level_prediction[0])
 
     index_queue.put({'type': 'index', 'index': int(level_prediction[0])})
+
+    frequency = np.mean([peaks_x, peaks_y, peaks_z]) / 5
+    
+    freq_queue.put(np.round(frequency, 2))
     
     
     #counter += 1
