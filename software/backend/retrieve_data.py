@@ -4,6 +4,13 @@ import asyncio
 import filter_anomalies
 import features
 import pandas as pd
+from joblib import load
+
+import sklearn
+import pandas as pd
+import numpy as np
+from sklearn.metrics import accuracy_score
+from sklearn.ensemble import RandomForestClassifier
 
 globalArray = []
 counter = 0
@@ -72,19 +79,24 @@ def  get_data(x,y,z):
     peaks_z = features.get_peak_count(z)
 
        # Wrap the result array as a list of lists (2D data)
-    result_array = [x_max,y_max,z_max,x_min, y_min, z_min, x_std, y_std, z_std, x_mean, y_mean, z_mean,
-                     zerocrossing_x, zerocrossing_y, zerocrossing_z, peaks_x, peaks_y, peaks_z]
-    
-    counter += 1
+    result_array = [[x_max,y_max,z_max,x_min, y_min, z_min, x_std, y_std, z_std, x_mean, y_mean, z_mean,
+                     zerocrossing_x, zerocrossing_y, zerocrossing_z, peaks_x, peaks_y, peaks_z]]
 
-    globalArray.append(result_array)
+    classifier = load('TremorSeverityPrediction.joblib')
+    level_prediction = classifier.predict(result_array)
 
-    print("result saved")
 
-    if counter == 3:
-        save_data()
+    print("Tremor level is ")
+    print(level_prediction[0])
 
-    # Convert to DataFrame
+    #counter += 1
+
+    #globalArray.append(result_array)
+
+
+    #if counter == 3:
+    #   save_data()
+
     
 
 def save_data():
@@ -94,6 +106,7 @@ def save_data():
 
     # Save to CSV
     df.to_csv("output.csv", index=False)
+    
 
     print("DataFrame saved to output.csv")
 
@@ -137,7 +150,7 @@ try:
                     data_arrayX.append(int("".join(split_data[0].split())))
                     data_arrayY.append(int("".join(split_data[1].split())))
                     data_arrayZ.append(int("".join(split_data[2].split())))
-                    print("Received:", data)
+                    #print("Received:", data)
                 except:
                     print("Error.")
         else:

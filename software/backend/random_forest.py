@@ -4,6 +4,7 @@ import numpy as np
 from sklearn.metrics import accuracy_score
 from sklearn.ensemble import RandomForestClassifier
 
+
 # Read the CSV file
 file_path = "Codejam14Data.csv"  # Replace with your actual file path
 data = pd.read_csv(file_path)
@@ -33,16 +34,22 @@ from joblib import dump
 # Save the trained model to a file
 dump(classifier, 'TremorSeverityPrediction.joblib')
 
+
+
 from joblib import load
 
-# Load the model from the file
-classifierImported = load('TremorSeverityPrediction.joblib')
+def ML_predict(array):
+    # Load the model from the file
+    classifier = load('TremorSeverityPrediction.joblib')
+    prediction = classifier.predict(array)
 
-# Use the loaded model for predictions
-new_y_pred = classifierImported.predict(X_test)
-cm = confusion_matrix(y_test, new_y_pred)
-print(cm)
-print(accuracy_score(y_test, new_y_pred))
+    return prediction
+
+    # Use the loaded model for predictions
+    #new_y_pred = classifierImported.predict(X_test)
+    #cm = confusion_matrix(y_test, new_y_pred)
+    #print(cm)
+    #print(accuracy_score(y_test, new_y_pred))
 
 
 
